@@ -1,6 +1,7 @@
 # bollinger bands trading bot 
 #https://www.investopedia.com/terms/b/bollingerbands.asp
 #https://fr.wikipedia.org/wiki/%C3%89cart_type
+# https://www.coingecko.com/en/api/documentation
 
 # candles matplotlib https://www.statology.org/matplotlib-python-candlestick-chart/
 '''
@@ -35,7 +36,7 @@ def SD():
 
 
 # guide-line :
-# connect to tradingview api to get the price
+# connect to coingeko api to get the price
 # connect to binance via api to get acces to a market
 # create all the functions
 # group things together

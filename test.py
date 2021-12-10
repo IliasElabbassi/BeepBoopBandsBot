@@ -7,13 +7,15 @@ import utils
 import Candle
 
 cg = CoinGeckoAPI()
+
+#cg = CoinGeckoAPI()
 #price = cg.get_price(ids='terra-luna', vs_currencies='usd')
 #print(price)
 
 ts = pd.Timestamp(1999, 2, 10, 10, 30)
 ts_minus30min = 30*60
 current_ts = time.time() # get curretn ts
-contract = ... # get contract
+#contract = ... # get contract
 ts_20days = 60*60*12*20 # twenty days timestamp
 
 
@@ -99,7 +101,3 @@ data = pd.DataFrame({
                     })  
 
 print(data)
-
-
-
-
