@@ -2,6 +2,7 @@
 #https://www.investopedia.com/terms/b/bollingerbands.asp
 #https://fr.wikipedia.org/wiki/%C3%89cart_type
 
+# candles matplotlib https://www.statology.org/matplotlib-python-candlestick-chart/
 '''
 where:
 BOLU=Upper Bollinger Band
