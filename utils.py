@@ -47,6 +47,7 @@ def format(json_prices):
 
 def infoForDataShow(candles):
     import numpy as np
+    
     open = []
     close = []
     high = []

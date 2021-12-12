@@ -15,6 +15,9 @@ m=Number of standard deviations (typically 2)
 σ[TP,n]=Standard Deviation over last n periods of TP
 '''
 
+from pycoingecko import CoinGeckoAPI
+import time
+
 # BOLU=MA(TP,n)+m∗σ[TP,n]
 # output an array
 def BOLU():
@@ -25,7 +28,7 @@ def BOLD():
     pass
 
 # Moving Average during a certain period of time
-# take all the prices (high + low + close of a timeframe) during a day and compute its average
+# take all the prices (high + low + close of a timeframe) during a timeframe and compute its average
 # an entry in the output array is equal to a day
 def MA(n):
     pass
@@ -40,3 +43,24 @@ def SD():
 # connect to binance via api to get acces to a market
 # create all the functions
 # group things together
+
+
+def getPricesDuring20days():
+    prices = []
+    current_ts = time.time() # get curretn ts
+    ts_minus30min = 30*60
+
+    for i in range(0,20):
+        from_ = str(current_ts-(ts_minus30min*47*20)) # 20 days from now
+        to_ = str(current_ts-(ts_minus30min*47*19))
+
+        getred_grice = cg.get_coin_market_chart_range_by_id(
+                id="terra-luna",
+                vs_currency="usd",
+                from_timestamp=from_, 
+                to_timestamp=to_
+            )
+        
+        prices.append(getred_grice)
+
+    return prices
