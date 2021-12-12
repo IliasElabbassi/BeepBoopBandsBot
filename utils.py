@@ -12,6 +12,53 @@ def min(list):
             min = l
     return min
 
+def getCandle(prices):
+    import Candle
+    # 30min candles
+    # one input in prices == 5 minutes
+    # one candle <----> 5 input in the array
+    candles = []
+    for i in range(0, len(prices["prices"]), 5):
+        list = []
+        for j in range(0,5):
+            if i+j >= len(prices["prices"]):
+                break
+            list.append(prices["prices"][i+j][1])
+
+        if list:
+            first_ = list[0]
+            last_ = list[-1]
+            max_ = max(list)
+            min_ = min(list)
+
+            candle = Candle.Candle(last_, first_, max_, min_)
+            candles.append(candle)
+
+    return candles
+
+def format(json_prices):
+    prices = []
+
+    for price in json_prices["prices"]:
+        prices.append(price[1])
+    
+    return prices
+
+
+def infoForDataShow(candles):
+    import numpy as np
+    open = []
+    close = []
+    high = []
+    low = []
+    for candle in candles:
+        open.append(candle.open)
+        close.append(candle.close)
+        high.append(candle.high)
+        low.append(candle.low)
+    
+    return (np.array(open), np.array(close), np.array(high), np.array(low))
+
 def printChart(data):
     import matplotlib.pyplot as plt
 
