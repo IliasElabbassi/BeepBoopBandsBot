@@ -96,3 +96,12 @@ def printChart(data):
 
     #display candlestick chart
     plt.show()
+
+def concatenateArrays(arrays):
+    import numpy as np
+    toReturn = np.concatenate((arrays[0], arrays[1]), axis=None)
+    for i in range(2, len(arrays)):
+        toReturn = np.concatenate((toReturn, arrays[i]))
+
+    return toReturn
+        

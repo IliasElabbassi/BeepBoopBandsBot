@@ -17,6 +17,12 @@ m=Number of standard deviations (typically 2)
 
 from pycoingecko import CoinGeckoAPI
 import time
+import utils
+import pandas as pd
+import sys
+
+# global var
+VERBOSE = False
 
 # BOLU=MA(TP,n)+m∗σ[TP,n]
 # output an array
@@ -46,21 +52,78 @@ def SD():
 
 
 def getPricesDuring20days():
+    cg = CoinGeckoAPI()
+
     prices = []
-    current_ts = time.time() # get curretn ts
+    current_ts = time.time() # get current ts
     ts_minus30min = 30*60
+    from_ = current_ts-(ts_minus30min*47*20) # 20 days from now
+    to_ = current_ts-(ts_minus30min*47*19)
+    if VERBOSE:
+        print("-----------------GETTING PRICE----------------------")
+        print("from_ : {0}".format(time.ctime(from_)))
+        print("to_ : {0}".format(time.ctime(to_)))
+        print("\n")
 
-    for i in range(0,20):
-        from_ = str(current_ts-(ts_minus30min*47*20)) # 20 days from now
-        to_ = str(current_ts-(ts_minus30min*47*19))
-
-        getred_grice = cg.get_coin_market_chart_range_by_id(
+    for i in range(1,19):
+        getted_price = cg.get_coin_market_chart_range_by_id(
                 id="terra-luna",
                 vs_currency="usd",
-                from_timestamp=from_, 
-                to_timestamp=to_
+                from_timestamp=str(from_), 
+                to_timestamp=str(to_)
             )
-        
-        prices.append(getred_grice)
+                    
+        prices.append(getted_price)
+
+        from_ = current_ts-(ts_minus30min*47*(20-i))
+        to_ = current_ts-(ts_minus30min*47*(19-i))
+
+        if VERBOSE:
+            print("from_ : {0}".format(time.ctime(from_)))
+            print("to_ : {0}".format(time.ctime(to_)))
+            print("\n")
+
 
     return prices
+
+if __name__ == "__main__":
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-v":
+            VERBOSE = True
+
+    prices = getPricesDuring20days()
+    candles = []
+    opens = []
+    closes = []
+    highs = []
+    lows = []
+
+    for data in prices:
+        candles.append(utils.getCandle(data))
+
+    for candle in candles:
+        open1, close1, high1, low1 = utils.infoForDataShow(candle)
+        opens.append(open1)
+        closes.append(close1)
+        highs.append(high1)
+        lows.append(low1)
+
+    opens = utils.concatenateArrays(opens)
+    closes = utils.concatenateArrays(closes)
+    highs = utils.concatenateArrays(highs)
+    lows = utils.concatenateArrays(lows)
+
+
+    data = pd.DataFrame({
+                        'open': opens,
+                        'close': closes,
+                        'high': highs,
+                        'low': lows
+                        }
+                        )  
+
+    if VERBOSE:
+        print(data)
+
+    utils.printChart(data)
