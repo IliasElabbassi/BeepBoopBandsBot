@@ -60,7 +60,7 @@ def infoForDataShow(candles):
     
     return (np.array(open), np.array(close), np.array(high), np.array(low))
 
-def printChart(data):
+def printChart(data, ma):
     import matplotlib.pyplot as plt
 
     #create figure    
@@ -93,8 +93,32 @@ def printChart(data):
 
     #rotate x-axis tick labels
     plt.xticks(rotation=45, ha='right')
+    plt.title("Terra Luna chart")
+
+    # days = []
+
+    # for i in range(1,len(ma)+1):
+    #     days.append(i)
+
+
+    plt.plot(ma, color='r')
 
     #display candlestick chart
+    plt.show()
+
+def plotMA(ma):
+    import matplotlib.pyplot as plt
+
+    days = []
+
+    for i in range(1,len(ma)+1):
+        days.append(i)
+
+    plt.figure()
+    plt.plot(days, ma, color='r')
+    plt.xlabel("days")
+    plt.ylabel("price")
+    plt.title("Moving average")
     plt.show()
 
 def concatenateArrays(arrays):

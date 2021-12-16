@@ -20,6 +20,10 @@ import time
 import utils
 import pandas as pd
 import sys
+import statistics
+import numpy as np
+from threading import Thread
+
 
 # global var
 VERBOSE = False
@@ -36,12 +40,43 @@ def BOLD():
 # Moving Average during a certain period of time
 # take all the prices (high + low + close of a timeframe) during a timeframe and compute its average
 # an entry in the output array is equal to a day
-def MA(n):
-    pass
+def MA(candles):
+
+    c = []
+
+    for arr in candles:
+        for ele in arr:
+            c.append(ele)
+
+    moving_average = []
+    mean_of_each_candle = []
+    sum = 0
+
+    for candle in c:
+        m = statistics.mean([
+            candle.close,
+            candle.open,
+            candle.high,
+            candle.low
+            ])
+
+        mean_of_each_candle.append(m)
+    
+    for i in range(0, 20):
+        moving_average.append(mean_of_each_candle[i])
+
+    for i in range(20, len(c)):
+        for y in range(20):
+            sum += mean_of_each_candle[i-y]
+        moving_average.append(sum/20)
+        sum = 0
+
+    return np.array(moving_average)
 
 # Standard deviation
-def SD():
-    pass
+def SD(data):
+    import math
+    return math.stdev(data)
 
 
 # guide-line :
@@ -51,21 +86,21 @@ def SD():
 # group things together
 
 
-def getPricesDuring20days():
+def getPricesDuringNdays(n):
     cg = CoinGeckoAPI()
 
     prices = []
     current_ts = time.time() # get current ts
     ts_minus30min = 30*60
-    from_ = current_ts-(ts_minus30min*47*20) # 20 days from now
-    to_ = current_ts-(ts_minus30min*47*19)
+    from_ = current_ts-(ts_minus30min*47*n) # 20 days from now
+    to_ = current_ts-(ts_minus30min*47*(n-1))
     if VERBOSE:
         print("-----------------GETTING PRICE----------------------")
         print("from_ : {0}".format(time.ctime(from_)))
         print("to_ : {0}".format(time.ctime(to_)))
         print("\n")
 
-    for i in range(1,19):
+    for i in range(1,n-1):
         getted_price = cg.get_coin_market_chart_range_by_id(
                 id="terra-luna",
                 vs_currency="usd",
@@ -75,8 +110,8 @@ def getPricesDuring20days():
                     
         prices.append(getted_price)
 
-        from_ = current_ts-(ts_minus30min*47*(20-i))
-        to_ = current_ts-(ts_minus30min*47*(19-i))
+        from_ = current_ts-(ts_minus30min*47*(n-i))
+        to_ = current_ts-(ts_minus30min*47*((n-1)-i))
 
         if VERBOSE:
             print("from_ : {0}".format(time.ctime(from_)))
@@ -92,7 +127,7 @@ if __name__ == "__main__":
         if sys.argv[1] == "-v":
             VERBOSE = True
 
-    prices = getPricesDuring20days()
+    prices = getPricesDuringNdays(40)
     candles = []
     opens = []
     closes = []
@@ -126,4 +161,13 @@ if __name__ == "__main__":
     if VERBOSE:
         print(data)
 
-    utils.printChart(data)
+    ma = MA(candles)
+
+    utils.printChart(data, ma)
+    # threads = []
+    # threads.append(Thread(target=utils.printChart, args=[data]))
+    # threads.append(Thread(target=utils.plotMA, args=[ma]))
+
+    # for thread in threads:
+    #     thread.start()  
+    #     thread.join()
