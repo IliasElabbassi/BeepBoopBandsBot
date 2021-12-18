@@ -1,3 +1,6 @@
+from matplotlib import colors
+
+
 def max(list):
     max = list[0]
     for l in list:
@@ -60,7 +63,7 @@ def infoForDataShow(candles):
     
     return (np.array(open), np.array(close), np.array(high), np.array(low))
 
-def printChart(data, ma):
+def printChart(data, ma, BU, BD):
     import matplotlib.pyplot as plt
 
     #create figure    
@@ -102,6 +105,8 @@ def printChart(data, ma):
 
 
     plt.plot(ma, color='r')
+    plt.plot(BD, color='b')
+    plt.plot(BU, color='b')
 
     #display candlestick chart
     plt.show()

@@ -27,20 +27,46 @@ from threading import Thread
 
 # global var
 VERBOSE = False
+M = 2    # number of standard deviation
 
 # BOLU=MA(TP,n)+m∗σ[TP,n]
 # output an array
-def BOLU():
-    pass
+def BOLU(ma, std_dev):
+    if VERBOSE:
+        print("------computing Bolling Upper Band-------------")
+    bolu_ = []
+
+    for i in range(0,len(std_dev)):
+        bolu_.append(ma[i] + (M*std_dev[i]))
+
+    return bolu_
 
 # BOLD=MA(TP,n)−m∗σ[TP,n]
-def BOLD():
-    pass
+def BOLD(ma, std_dev):
+    if VERBOSE:
+        print("------computing Bolling Lower Band-------------")
+    bold_ = []
+
+    for i in range(0,len(std_dev)):
+        bold_.append(ma[i] - (M*std_dev[i]))
+
+    return bold_
+
+def computeAllSD(ma):
+    if VERBOSE:
+        print("------computing moving average standard deviation -------------")
+    std_dev =  []
+    for price in ma:
+        std_dev.append(SD(price))
+
+    return std_dev
 
 # Moving Average during a certain period of time
 # take all the prices (high + low + close of a timeframe) during a timeframe and compute its average
 # an entry in the output array is equal to a day
 def MA(candles):
+    if VERBOSE:
+        print("------computing moving average -------------")
 
     c = []
 
@@ -51,11 +77,11 @@ def MA(candles):
     moving_average = []
     mean_of_each_candle = []
     sum = 0
-
+    
     for candle in c:
         m = statistics.mean([
-            candle.close,
-            candle.open,
+            #candle.close,
+            #candle.open,
             candle.high,
             candle.low
             ])
@@ -71,20 +97,20 @@ def MA(candles):
         moving_average.append(sum/20)
         sum = 0
 
-    return np.array(moving_average)
+    return moving_average
 
 # Standard deviation
 def SD(data):
-    import math
-    return math.stdev(data)
+    return statistics.stdev(data)
+    
 
+def realSD(ma):
+    sd = []
+    temp = np.array(ma)
+    for i in range(20, len(temp)):
+        sd.append(SD(temp[i-20:i]))
 
-# guide-line :
-# connect to coingeko api to get the price
-# connect to binance via api to get acces to a market
-# create all the functions
-# group things together
-
+    return sd
 
 def getPricesDuringNdays(n):
     cg = CoinGeckoAPI()
@@ -162,12 +188,25 @@ if __name__ == "__main__":
         print(data)
 
     ma = MA(candles)
+    for m in ma:
+        print(m)
 
-    utils.printChart(data, ma)
-    # threads = []
-    # threads.append(Thread(target=utils.printChart, args=[data]))
-    # threads.append(Thread(target=utils.plotMA, args=[ma]))
+    std_dev = realSD(ma)
 
-    # for thread in threads:
-    #     thread.start()  
-    #     thread.join()
+    sub_ma = np.array(ma)
+    sub_ma = sub_ma[19:-1]
+
+    # for ele in sub_ma:
+    #     print(ele)
+
+    # print(len(sub_ma))
+
+    BU = np.array(BOLU(sub_ma, std_dev))
+    BD = np.array(BOLD(sub_ma, std_dev))
+
+    zeros = np.zeros(19)
+
+    BU = np.concatenate((zeros, BU), axis=None)
+    BD = np.concatenate((zeros, BD), axis=None)
+
+    utils.printChart(data, ma, BU, BD)
