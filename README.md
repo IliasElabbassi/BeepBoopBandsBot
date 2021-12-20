@@ -1,3 +1,3 @@
 BeepBoopBandsBot
 
-a trading bot using the bollinger Bands methods.
+Implementation of the bollinger Bands methods.
