@@ -2,6 +2,7 @@
 #https://www.investopedia.com/terms/b/bollingerbands.asp
 #https://fr.wikipedia.org/wiki/%C3%89cart_type
 # https://www.coingecko.com/en/api/documentation
+# https://cryptorank.io/api
 
 # candles matplotlib https://www.statology.org/matplotlib-python-candlestick-chart/
 '''
@@ -80,10 +81,10 @@ def MA(candles):
     
     for candle in c:
         m = statistics.mean([
-            #candle.close,
+            candle.close,
             #candle.open,
-            candle.high,
-            candle.low
+            # candle.high,
+            # candle.low
             ])
 
         mean_of_each_candle.append(m)
@@ -149,10 +150,10 @@ def getPricesDuringNdays(n):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "-v":
-            VERBOSE = True
-
+    for arg in sys.argv:
+        if arg == "-v":
+            VERBOSE == True
+        
     prices = getPricesDuringNdays(40)
     candles = []
     opens = []
