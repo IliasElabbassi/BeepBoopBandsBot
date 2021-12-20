@@ -1,5 +1,6 @@
 from matplotlib import colors
-
+import math
+import pandas as pd
 
 def max(list):
     max = list[0]
@@ -14,6 +15,65 @@ def min(list):
         if l < min:
             min = l
     return min
+
+def real_min(a,b):
+    if a < b:
+        return a
+    else: return b
+
+def real_max(a,b):
+    if a > b:
+        return a
+    else: return b
+
+def getCandle_binance(df):
+    import Candle
+    # 30min candles
+    # one input in prices == 1 minutes
+    # one candle <----> 30 input in the array
+    candles = []
+    lows = df['low']
+    highs = df['high']
+    closes = df['close']
+    opens = df['open']
+
+    open_set = False
+
+    open_c = None
+    close_c = None
+    high_c = 0
+    low_c = 9999999999
+
+
+    for i in range(0,len(lows), 30):
+        for y in range(0, 30):
+            idx = i+y
+            if idx >= len(lows)-1:
+                high_c = real_max(high_c, highs[idx])
+                low_c = real_min(low_c, lows[idx])
+                close_c = closes[idx]
+                break
+
+            if not open_set:
+                open_c = opens[idx]
+                open_set = True
+
+            if idx == i+29:
+                close_c = closes[idx]
+
+            high_c = real_max(high_c, highs[idx])
+            low_c = real_min(low_c, lows[idx])
+        
+        candle = Candle.Candle(close_c, open_c, high_c, low_c)
+        candles.append(candle)
+        
+        open_c = None
+        close_c = None
+        high_c = 0
+        low_c = 9999999999
+        open_set = False
+        
+    return candles
 
 def getCandle(prices):
     import Candle
@@ -63,8 +123,37 @@ def infoForDataShow(candles):
     
     return (np.array(open), np.array(close), np.array(high), np.array(low))
 
-def printChart(data, ma, BU, BD):
+# intervals not quite done
+def printChart(data, ma, BU, BD, interval=None):
     import matplotlib.pyplot as plt
+
+    if interval:
+        length = len(data['close'])
+        f = len(data['close']) - interval
+
+        closes = data['close'][f:length]
+        opens = data['open'][f:length]
+        highs = data['high'][f:length]
+        lows = data['low'][f:length]
+
+        data = pd.DataFrame({
+                'open': opens,
+                'close': closes,
+                'high': highs,
+                'low': lows
+                }
+            )  
+        data.reset_index()
+        
+        ma = ma[f:length]
+        BU = BU[f:length]
+        BD = BD[f:length]
+
+        print(data)
+
+        print(ma)
+        print(BU)
+        print(BD)
 
     #create figure    
     plt.figure()

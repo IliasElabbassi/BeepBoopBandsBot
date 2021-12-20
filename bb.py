@@ -24,7 +24,7 @@ import sys
 import statistics
 import numpy as np
 from threading import Thread
-
+from binance.client import Client
 
 # global var
 VERBOSE = False
@@ -64,27 +64,29 @@ def computeAllSD(ma):
 
 # Moving Average during a certain period of time
 # take all the prices (high + low + close of a timeframe) during a timeframe and compute its average
-# an entry in the output array is equal to a day
+# an entry in the output array is equal to a day (with the coingeko api)
+# an entry in the output array is equal to 30min (with the binance api)
 def MA(candles):
     if VERBOSE:
         print("------computing moving average -------------")
 
-    c = []
+    # c = []
 
-    for arr in candles:
-        for ele in arr:
-            c.append(ele)
+    # for arr in candles:
+    #     for ele in arr:
+    #         c.append(ele)
 
     moving_average = []
     mean_of_each_candle = []
     sum = 0
     
-    for candle in c:
+    # for candle in c:
+    for candle in candles:
         m = statistics.mean([
             candle.close,
-            #candle.open,
-            # candle.high,
-            # candle.low
+            candle.open,
+            candle.high,
+            candle.low
             ])
 
         mean_of_each_candle.append(m)
@@ -92,13 +94,15 @@ def MA(candles):
     for i in range(0, 20):
         moving_average.append(mean_of_each_candle[i])
 
-    for i in range(20, len(c)):
+    # for i in range(20, len(c)):
+    for i in range(20, len(candles)):
         for y in range(20):
             sum += mean_of_each_candle[i-y]
         moving_average.append(sum/20)
         sum = 0
 
     return moving_average
+
 
 # Standard deviation
 def SD(data):
@@ -148,47 +152,101 @@ def getPricesDuringNdays(n):
 
     return prices
 
+def get_price_from_Binance():    
+    API_KEY = # your binance api key here
+    SECRET = # your binance secret key here
+
+    client = Client(API_KEY, SECRET)
+
+    klines = client.get_historical_klines("LUNAUSDT", client.KLINE_INTERVAL_1MINUTE, "10 November 2021")
+
+    df = pd.DataFrame(klines, 
+            columns=[
+                'timestamp',
+                'open',
+                'high',
+                'low',
+                'close',
+                'volume',
+                'close_time',
+                'quote_av',
+                'trades',
+                'tb_base_av',
+                'tb_quote_av',
+                'ignore'
+            ]
+    )
+
+    del df['ignore']
+    del df['close_time']
+    del df['tb_quote_av']
+    del df['tb_base_av']
+    del df['trades']
+    del df['quote_av']
+
+    df['close'] = pd.to_numeric(df['close'])
+    df['low'] = pd.to_numeric(df['low'])
+    df['high'] = pd.to_numeric(df['high'])
+    df['open'] = pd.to_numeric(df['open'])
+
+    df.set_index(df['timestamp'])
+    df.index = pd.to_datetime(df.index, unit='ms')
+
+    del df['timestamp']
+
+    return df
+
 if __name__ == "__main__":
 
     for arg in sys.argv:
         if arg == "-v":
             VERBOSE == True
         
-    prices = getPricesDuringNdays(40)
-    candles = []
-    opens = []
-    closes = []
-    highs = []
-    lows = []
+    # prices = getPricesDuringNdays(40)
+    # candles = []
+    # opens = []
+    # closes = []
+    # highs = []
+    # lows = []
 
-    for data in prices:
-        candles.append(utils.getCandle(data))
+    data = get_price_from_Binance()
 
-    for candle in candles:
-        open1, close1, high1, low1 = utils.infoForDataShow(candle)
-        opens.append(open1)
-        closes.append(close1)
-        highs.append(high1)
-        lows.append(low1)
+    candles = utils.getCandle_binance(data)
 
-    opens = utils.concatenateArrays(opens)
-    closes = utils.concatenateArrays(closes)
-    highs = utils.concatenateArrays(highs)
-    lows = utils.concatenateArrays(lows)
+
+    # for data in prices:
+    #     candles.append(utils.getCandle(data))
+
+    # for candle in candles:
+    #     open1, close1, high1, low1 = utils.infoForDataShow(candle)
+    #     opens.append(open1)
+    #     closes.append(close1)
+    #     highs.append(high1)
+    #     lows.append(low1)
+
+    # opens = utils.concatenateArrays(opens)
+    # closes = utils.concatenateArrays(closes)
+    # highs = utils.concatenateArrays(highs)
+    # lows = utils.concatenateArrays(lows)
+
+
+    opens, closes, highs, lows = utils.infoForDataShow(candles)
+
 
 
     data = pd.DataFrame({
-                        'open': opens,
-                        'close': closes,
-                        'high': highs,
-                        'low': lows
-                        }
-                        )  
+                'open': opens,
+                'close': closes,
+                'high': highs,
+                'low': lows
+                }
+            )  
 
     if VERBOSE:
         print(data)
 
     ma = MA(candles)
+
     for m in ma:
         print(m)
 
@@ -196,18 +254,18 @@ if __name__ == "__main__":
 
     sub_ma = np.array(ma)
     sub_ma = sub_ma[19:-1]
-
-    # for ele in sub_ma:
-    #     print(ele)
-
-    # print(len(sub_ma))
+    ma = np.array(ma)
 
     BU = np.array(BOLU(sub_ma, std_dev))
     BD = np.array(BOLD(sub_ma, std_dev))
 
-    zeros = np.zeros(19)
+    # zeros = np.zeros(19)
+    # zeros = np.zeros(len(ma))
+    fill = np.empty(19)
+    fill.fill(60)
 
-    BU = np.concatenate((zeros, BU), axis=None)
-    BD = np.concatenate((zeros, BD), axis=None)
+    BU = np.concatenate((fill, BU), axis=None)
+    BD = np.concatenate((fill, BD), axis=None)
 
     utils.printChart(data, ma, BU, BD)
+    # utils.printChart(data, ma, [], [])

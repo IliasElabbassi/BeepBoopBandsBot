@@ -55,6 +55,7 @@ data = pd.DataFrame({
                     }
                     )  
 
+
 print(data)
 
 utils.printChart(data)
